@@ -1,2 +1,5 @@
 images/*
 node_modules
+test.png
+mask.png
+base-converted.png
