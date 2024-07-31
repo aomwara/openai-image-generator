@@ -57,7 +57,7 @@ const getRandomOccupation = () => {
   return occupations[randomIndex];
 };
 
-const generate = async (occ, rarity) => {
+const generate = async (occ, rarity, id) => {
   const payload = {
     init_image: fs.createReadStream("base.png"),
     init_image_mode: "IMAGE_STRENGTH",
@@ -142,7 +142,7 @@ const generateImages = async () => {
     occupationCounts[occupation]++;
 
     // Uncomment the next line to enable image generation
-    // await generate(occupation, rarity);
+    //await generate(occupation, rarity, i + 1);
   }
 
   console.log("Rarity Counts:", rarityCounts);
