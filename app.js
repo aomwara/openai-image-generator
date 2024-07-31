@@ -34,7 +34,7 @@ const generate = async (occ) => {
     init_image: fs.createReadStream("base.png"),
     init_image_mode: "IMAGE_STRENGTH",
     image_strength: 0.16,
-    "text_prompts[0][text]": `A portrait of chicken, occupation is ${occ}, doodle-style`,
+    "text_prompts[0][text]": `A portrait of child cartoon minimalist [gender],${occ}, [style of cloth] cloth, [details, hat or hair] on the head, minimalist, cartoon style, Doodle NFT Style, simple and big line, outlined art, flat design, [color of the illustration] flash pastel color ligntning, pastel background, portrait, hd, portrait, face profil view, --v 4`,
     cfg_scale: 7,
     samples: 1,
     steps: 30,
