@@ -1,5 +1,6 @@
-images/*
+images/*.png
 node_modules
 test.png
 mask.png
 base-converted.png
+.env

@@ -1,100 +1,69 @@
 const axios = require("axios");
 const fs = require("fs");
 const FormData = require("form-data");
-const sharp = require("sharp");
+require("dotenv").config();
 
-const apiKey = "";
-const model = "dall-e-3";
-const prompt =
-  " An image of a chicken playing a piano, depicted in a simple and minimalist style using just outlines. The background is random color.";
+const apiKey = process.env.API_KEY;
+const engine_id = "stable-diffusion-xl-1024-v1-0";
 
-const convertImage = async (inputPath, outputPath) => {
-  try {
-    await sharp(inputPath)
-      .ensureAlpha() // Add an alpha channel to convert to RGBA
-      .toFile(outputPath);
-  } catch (error) {
-    console.error("Error converting image:", error);
-    throw error;
-  }
-};
+const occupations = [
+  "Software Engineer",
+  "Data Scientist",
+  "Graphic Designer",
+  "Nurse",
+  "Teacher",
+  "Accountant",
+  "Marketing Manager",
+  "Project Manager",
+  "Sales Representative",
+  "Electrician",
+  "Plumber",
+  "Chef",
+  "Mechanical Engineer",
+  "Civil Engineer",
+  "Web Developer",
+  "Doctor",
+  "Pharmacist",
+  "Lawyer",
+  "Architect",
+  "Journalist",
+];
 
-const editImage = async () => {
-  try {
-    // const inputImagePath = "test.png";
-    const convertedImagePath = "base-converted.png";
+const generate = async (occ) => {
+  const payload = {
+    init_image: fs.createReadStream("base.png"),
+    init_image_mode: "IMAGE_STRENGTH",
+    image_strength: 0.16,
+    "text_prompts[0][text]": `A portrait of chicken, occupation is ${occ}, doodle-style`,
+    cfg_scale: 7,
+    samples: 1,
+    steps: 30,
+  };
 
-    // Convert the image to RGBA
-    // await convertImage(inputImagePath, convertedImagePath);
-
-    const form = new FormData();
-    form.append("image", fs.createReadStream(convertedImagePath));
-    form.append("prompt", "chicken with doodle style playing a guitar");
-    form.append("n", 1);
-    form.append("size", "512x512");
-
-    const resp = await axios.post(
-      "https://api.openai.com/v1/images/edits",
-      form,
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          ...form.getHeaders(),
-        },
-      }
-    );
-
-    const imageUrl = resp.data.data[0].url;
-
-    // Download and save the image
-    const imageResponse = await axios.get(imageUrl, {
+  const response = await axios.postForm(
+    `https://api.stability.ai/v1/generation/${engine_id}/image-to-image`,
+    axios.toFormData(payload, new FormData()),
+    {
+      validateStatus: undefined,
       responseType: "arraybuffer",
-    });
-    fs.writeFileSync(`images/edit-doodle.png`, imageResponse.data);
-
-    console.log(resp.data);
-  } catch (error) {
-    console.error(
-      "Error:",
-      error.response ? error.response.data : error.message
-    );
-  }
-};
-
-const generateImage = async () => {
-  try {
-    const response = await axios.post(
-      "https://api.openai.com/v1/images/generations",
-      {
-        model: model,
-        prompt: prompt,
-        n: 1,
-        size: "1024x1024",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: "image/png",
       },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-      }
+    }
+  );
+
+  if (response.status === 200) {
+    fs.writeFileSync(
+      `images/${occ ? occ : "normal"}-chicken-${new Date()}.png`,
+      Buffer.from(response.data)
     );
-
-    const imageUrl = response.data.data[0].url;
-
-    // Download and save the image
-    const imageResponse = await axios.get(imageUrl, {
-      responseType: "arraybuffer",
-    });
-    fs.writeFileSync(`images/chicken_doodle.png`, imageResponse.data);
-
-    console.log(response.data);
-  } catch (error) {
-    console.error(
-      "Error:",
-      error.response ? error.response.data : error.message
-    );
+  } else {
+    throw new Error(`${response.status}: ${response.data.toString()}`);
   }
 };
 
-generateImage();
-// editImage();
+// generate();
+occupations.map(async (occ) => {
+  await generate(occ);
+});
